@@ -1,15 +1,63 @@
-<<<<<<< HEAD
+# SecureWipe Pro v2.1.0
 
-  # One-Click Secure Wipe App
+A comprehensive tool for secure data wiping, verification, and certificate generation for Windows PCs and Android devices.
 
-  This is a code bundle for One-Click Secure Wipe App. The original project is available at https://www.figma.com/design/745LENATJv6eGsiXqWyw2v/One-Click-Secure-Wipe-App.
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-  ## Running the code
+## Features
 
-  Run `npm i` to install the dependencies.
+- Detect connected drives, USBs, and Android devices.
+- Safe demo wipe and full destructive wipe options.
+- Verification tests:
+  - Surface scan
+  - Deep sector analysis
+  - Challenge-write test
+  - Magnetic residue check
+- Generate wipe certificates in JSON and PDF formats.
+- Dark/light mode support.
+- Real-time logs and help section.
 
-  Run `npm run dev` to start the development server.
-  
-=======
-# ONE-CLICK-SECURE-WIPE
->>>>>>> 6d9e6b96c9647fe0c7eaa1ea7523ed4942f9aad3
+---
+
+## Installation
+
+1. Clone the repository:
+   git clone https://github.com/Ctrshivu/ONE-CLICK-SECURE-WIPE.git
+
+2- Navigate into the project folder:
+cd ONE-CLICK-SECURE-WIPE
+
+3- install dependencies
+npm install
+
+4- Run the DEvelopment server
+npm run dev
+
+## Usage
+
+- Devices are detected automatically.
+- Select a device from the list.
+- Run a Safe Wipe or Full Destructive Wipe.
+- Verify wipe completion with the verification tests.
+- Generate a certificate for the wiped device(s).
+- Download the certificate as JSON or PDF.
+
+## Built With
+
+React + TypeScript
+Tailwind CSS
+Lucide Icons
+Custom UI components for Cards, Buttons, Progress, Dialogs, and Scroll areas.
+
+## Author / Team
+
+Team Name: Lazy Debuggers
+Author: Sanjay Kumar Sutar (Lead Developer)
+
+## Notes
+
+Demo mode does not modify real data.
+
+Make sure to select the correct device before running a full wipe.
+
+JSON and PDF certificates are generated for audit purposes.
