@@ -30,7 +30,7 @@ interface DevicesResponse {
 }
 
 interface DeviceDetectionProps {
-  setDevices: (devices: Device[]) => void; // <- Lift devices to App.tsx
+  setDevices: (devices: Device[]) => void;
 }
 
 export function DeviceDetection({ setDevices }: DeviceDetectionProps) {
@@ -41,42 +41,55 @@ export function DeviceDetection({ setDevices }: DeviceDetectionProps) {
       try {
         const res = await fetch("http://127.0.0.1:8000/devices");
         const data: DevicesResponse = await res.json();
-
         let deviceList: Device[] = [];
 
+        // Android phones
         if (data.phones && data.phones.length > 0) {
           deviceList = data.phones.map((phone) => ({
             id: phone.serial,
-            name: phone.name,
-            type: "android",
-            status: "ready",
+            name: `Phone: ${phone.name}`,
+            type: "android" as "android",
+            status: "ready" as "ready",
             details: "Connected via USB debugging",
           }));
-        } else if (data.drives && data.drives.length > 0) {
-          deviceList = data.drives.map((drive) => ({
-            id: drive.device,
-            name: (drive.name || drive.device).charAt(0), // Only show drive letter
-            type: "drive",
-            status: drive.device === "C:\\" ? "warning" : "ready",
-            details:
-              drive.device === "C:\\"
-                ? "Contains system files - use with caution"
-                : "Safe for wiping",
-          }));
+        }
 
-          if (data.pc_name) {
-            deviceList.unshift({
-              id: "pc_name",
-              name: data.pc_name,
-              type: "pc",
-              status: "ready",
-              details: "This is the current Windows PC",
-            });
-          }
+        if (data.drives && data.drives.length > 0) {
+          deviceList = [
+            ...deviceList,
+            ...data.drives.map((drive) => {
+              const cleanId = drive.device.endsWith("\\")
+                ? drive.device
+                : drive.device + "\\";
+              const isSystem = cleanId.startsWith("C:");
+              return {
+                id: cleanId,
+                name: cleanId,
+                type: "drive" as "drive",
+                status: isSystem
+                  ? ("warning" as "warning")
+                  : ("ready" as "ready"),
+                details: isSystem
+                  ? "Contains system files - use with caution"
+                  : "Safe for wiping",
+                size: "N/A", // ← add this so TypeScript knows size exists
+              };
+            }),
+          ];
+        }
+
+        if (data.pc_name) {
+          deviceList.unshift({
+            id: "pc_name",
+            name: data.pc_name,
+            type: "pc" as "pc",
+            status: "ready" as "ready",
+            details: "This is the current Windows PC",
+          });
         }
 
         setLocalDevices(deviceList);
-        setDevices(deviceList); // <- Send devices up to App.tsx
+        setDevices(deviceList);
       } catch (err) {
         console.error("Error fetching devices:", err);
       }
@@ -87,6 +100,7 @@ export function DeviceDetection({ setDevices }: DeviceDetectionProps) {
     return () => clearInterval(interval);
   }, []);
 
+  // ---------------- Helper functions ----------------
   const getIcon = (type: string) => {
     switch (type) {
       case "drive":
@@ -128,14 +142,7 @@ export function DeviceDetection({ setDevices }: DeviceDetectionProps) {
     }
   };
 
-  // Total devices logic:
-  let totalDevices = 0;
-  if (devices.some((d) => d.type === "android")) {
-    totalDevices = devices.filter((d) => d.type === "android").length;
-  } else if (devices.some((d) => d.type === "drive")) {
-    totalDevices = 1;
-  }
-
+  // ---------------- JSX UI ----------------
   return (
     <Card className="border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg">
       <CardHeader>
@@ -184,7 +191,8 @@ export function DeviceDetection({ setDevices }: DeviceDetectionProps) {
 
         <div className="pt-3 mt-4 border-t">
           <p className="text-sm text-muted-foreground text-center">
-            Total: {totalDevices} device{totalDevices !== 1 ? "s" : ""} detected
+            Total: {devices.length} device{devices.length !== 1 ? "s" : ""}{" "}
+            detected
           </p>
         </div>
       </CardContent>

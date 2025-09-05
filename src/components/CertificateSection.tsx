@@ -11,38 +11,42 @@ import {
 } from "./ui/dialog";
 import { Badge } from "./ui/badge";
 import { ScrollArea } from "./ui/scroll-area";
+import { Device } from "./ActionButtons";
+import { VerificationResult } from "./VerificationSection";
 
-export function CertificateSection() {
+interface CertificateSectionProps {
+  devices: Device[];
+  verificationResults: VerificationResult[];
+}
+
+export function CertificateSection({
+  devices,
+  verificationResults,
+}: CertificateSectionProps) {
   const [copied, setCopied] = useState(false);
 
   const certificateData = {
-    certificate_id: "CERT-SW-20250902-001",
-    timestamp: "2025-09-02T14:30:45Z",
+    certificate_id: `CERT-SW-${new Date()
+      .toISOString()
+      .slice(0, 10)
+      .replace(/-/g, "")}-001`,
+    timestamp: new Date().toISOString(),
     operation_type: "Secure Wipe - DoD 5220.22-M Standard",
-    devices: [
-      {
-        identifier: "C:",
-        name: "System Drive",
-        size_gb: 476,
-        serial_number: "WD-WXA1A23456789",
-        wipe_method: "3-pass overwrite",
-        verification_status: "PASSED",
-      },
-      {
-        identifier: "Samsung Galaxy S23",
-        name: "Android Device",
-        size_gb: 128,
-        serial_number: "RF8M12345678",
-        wipe_method: "Cryptographic erase",
-        verification_status: "PASSED",
-      },
-    ],
-    verification_tests: {
-      surface_scan: "PASSED",
-      deep_sector_analysis: "PASSED",
-      challenge_write_test: "PASSED",
-      magnetic_residue_check: "PASSED",
-    },
+    devices: devices.map((d) => ({
+      identifier: d.id,
+      name: d.name,
+      size_gb: d.size || "N/A",
+      serial_number: d.id,
+      wipe_method: "3-pass overwrite",
+      verification_status:
+        verificationResults.find((r) => r.id === d.id)?.status === "passed"
+          ? "PASSED"
+          : "FAILED",
+    })),
+    verification_tests: verificationResults.reduce((acc, r) => {
+      acc[r.test] = r.status.toUpperCase();
+      return acc;
+    }, {} as Record<string, string>),
     compliance: {
       standard: "DoD 5220.22-M",
       nist_guidelines: "SP 800-88 Rev. 1",
@@ -65,7 +69,6 @@ export function CertificateSection() {
   };
 
   const downloadPDF = () => {
-    // In a real app, this would generate and download a PDF
     const element = document.createElement("a");
     const file = new Blob([`Certificate of Secure Wipe\n\n${jsonString}`], {
       type: "text/plain",
